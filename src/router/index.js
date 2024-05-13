@@ -1,14 +1,37 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
+// import VueRouter from 'vue-router'
+import VueRouter from '@/vue-router'
 import HomeView from '../views/HomeView.vue'
 
+// Vue.use放入一个函数会默认执行，当放一个类时候会报错，所以会在类上加install方法。
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    children: [
+      {
+        path: 'a',
+        component: {
+          render: (h) => <h1>a</h1>
+        },
+        children: [{
+          path: 'child',
+          component: {
+            render: (h) => <h1>about</h1>
+          },
+
+        }]
+      },
+      {
+        path: 'b',
+        component: {
+          render: (h) => <h1>b</h1>
+        }
+      },
+    ],
   },
   {
     path: '/about',
@@ -21,9 +44,31 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: 'hash',
   base: process.env.BASE_URL,
   routes
 })
+
+router.beforeEach((from, to, next) => {
+  console.log('123 beforeEach');
+  next();
+})
+
+//测试api addRoutes to routes
+router.matcher.addRoutes([
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
+    children: [{
+      path: 'd',
+      component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+
+    }]
+  }
+])
+
+//导航路由守卫 beforeRouteLeave, beforeEach
+
 
 export default router
